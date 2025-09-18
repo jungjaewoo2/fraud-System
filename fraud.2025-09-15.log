@@ -1,0 +1,46 @@
+2025-09-15 17:21:11.165 [main] INFO  c.j.f.FraudSystemApplication - Starting FraudSystemApplication using Java 21.0.7 with PID 25692 (D:\Project\Zetta_Git\fraud-System\target\classes started by zetta in D:\Project\Zetta_Git\fraud-System)
+2025-09-15 17:21:11.287 [main] DEBUG c.j.f.FraudSystemApplication - Running with Spring Boot v3.5.5, Spring v6.2.10
+2025-09-15 17:21:11.307 [main] INFO  c.j.f.FraudSystemApplication - No active profile set, falling back to 1 default profile: "default"
+2025-09-15 17:21:13.865 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-09-15 17:21:14.039 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 148 ms. Found 4 JPA repository interfaces.
+2025-09-15 17:21:15.626 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-09-15 17:21:15.672 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-09-15 17:21:15.689 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-09-15 17:21:15.691 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.44]
+2025-09-15 17:21:16.347 [main] INFO  o.apache.jasper.servlet.TldScanner - At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2025-09-15 17:21:16.364 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-09-15 17:21:16.366 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 4895 ms
+2025-09-15 17:21:16.619 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-09-15 17:21:16.706 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.26.Final
+2025-09-15 17:21:16.756 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-09-15 17:21:17.370 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-09-15 17:21:17.431 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-09-15 17:21:17.817 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@2ee456c7
+2025-09-15 17:21:17.819 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-09-15 17:21:17.909 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-15 17:21:17.939 [main] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.42
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-09-15 17:21:19.596 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-09-15 17:21:19.746 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-09-15 17:21:20.697 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-09-15 17:21:21.727 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-09-15 17:21:21.765 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page template: index
+2025-09-15 17:21:21.962 [main] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+2025-09-15 17:21:22.142 [main] DEBUG o.s.s.web.DefaultSecurityFilterChain - Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, LogoutFilter, UsernamePasswordAuthenticationFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, ExceptionTranslationFilter, AuthorizationFilter
+2025-09-15 17:21:22.636 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-09-15 17:21:22.705 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-09-15 17:21:22.721 [main] INFO  c.j.f.FraudSystemApplication - Started FraudSystemApplication in 14.659 seconds (process running for 22.506)
+2025-09-15 17:21:40.140 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-09-15 17:21:40.143 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-09-15 17:21:40.157 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-09-15 17:21:40.207 [http-nio-8080-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing GET /
+2025-09-15 17:21:40.238 [http-nio-8080-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured GET /
+2025-09-15 17:21:40.327 [http-nio-8080-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing GET /WEB-INF/views/index.jsp
+2025-09-15 17:21:40.333 [http-nio-8080-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured GET /WEB-INF/views/index.jsp
+2025-09-15 17:21:42.271 [http-nio-8080-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
