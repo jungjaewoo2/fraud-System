@@ -22,7 +22,7 @@
                     </div>
                 </c:if>
                 
-                <!-- <form method="post" action="/login">
+                <form method="post" action="/login">
                     <div class="mb-3">
                         <label for="name" class="form-label">
                             <i class="fas fa-user me-2"></i>이름
@@ -47,7 +47,7 @@
                             로그인
                         </button>
                     </div>
-                </form> -->
+                </form> 
                 <div class="d-grid">
                     <button type="button" id="btn_submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-sign-in-alt me-2"></i>

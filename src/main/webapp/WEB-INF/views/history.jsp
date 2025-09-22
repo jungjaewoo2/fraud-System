@@ -65,7 +65,7 @@
                                                     <i class="fas fa-calendar me-1"></i>지급일
                                                 </div>
                                                 <div class="info-value">
-                                                    ${giftCard.issuedAt}
+                                                    ${giftCard.issuedAt.toString().substring(0, 16).replace('T', ' ')}
                                                 </div>
                                             </div>
                                             

@@ -147,7 +147,7 @@
                                 </c:if>
                                 <p class="mb-0">
                                     <i class="fas fa-calendar me-2"></i>
-                                    가입일: ${user.createdAt}
+                                    가입일: ${user.createdAt.toString().substring(0, 16).replace('T', ' ')}
                                 </p>
                             </div>
                             <div class="col-md-4 text-end">
@@ -244,7 +244,7 @@
                                                 <tr>
                                                     <td>${giftCards.size() - status.index}</td>
                                                     <td>
-                                                        ${giftCard.issuedAt}
+                                                        ${giftCard.issuedAt.toString().substring(0, 16).replace('T', ' ')}
                                                     </td>
                                                     <td>
                                                         <span class="badge bg-success fs-6">
