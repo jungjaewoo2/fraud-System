@@ -22,7 +22,7 @@
                     </div>
                 </c:if>
                 
-                <form method="post" action="/login">
+                <!-- <form method="post" action="/login">
                     <div class="mb-3">
                         <label for="name" class="form-label">
                             <i class="fas fa-user me-2"></i>이름
@@ -32,7 +32,7 @@
                     </div>
                     
                     <div class="mb-4">
-                        <label for="phoneNumber" class="form-label">
+                        <label for="phoneNumber" class="form-label"> 
                             <i class="fas fa-mobile-alt me-2"></i>핸드폰 번호
                         </label>
                         <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" 
@@ -47,7 +47,13 @@
                             로그인
                         </button>
                     </div>
-                </form>
+                </form> -->
+                <div class="d-grid">
+                    <button type="button" id="btn_submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        본인인증
+                    </button>
+                </div>
                 
                 <div class="text-center mt-4">
                     <small class="text-muted">
@@ -60,4 +66,30 @@
     </div>
 </div>
 
+<div style="display: none;">
+    <form name="form_chk" method="post" action="https://nice.checkplus.co.kr/cert/request" target="popupChk">
+        <label for="m">m:
+            <input type="text" id="m" name="m" value="service">
+        </label><br>
+        <label for="token_version_id">token_version_id :
+            <input type="text"  id="token_version_id" name="token_version_id" value="${token_version_id}">
+        </label><br>
+        <label for="enc_data"> enc_data :
+            <input type="text" id="enc_data" name="enc_data" value="${enc_data}">
+        </label><br>
+        <label for="integrity_value"> integrity_value :
+            <input type="text" id="integrity_value" name="integrity_value" value="${integrity_value}">
+        </label><br>
+    </form>
+</div>
 <%@ include file="footer.jsp" %>
+
+<script>
+    document.getElementById('btn_submit').addEventListener('click', function () {
+        window.open('', 'popupChk', 'width=500, height=550, top=100, left=100, fullscreen=no, menubar=no, status=no, toolbar=no, titlebar=yes, location=no, scrollbars=yes');
+        document.form_chk.submit();
+    })
+
+
+
+</script>
