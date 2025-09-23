@@ -29,8 +29,17 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @Column(name = "is_blacklisted", nullable = false)
+    private boolean isBlacklisted = false;
+    
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<GiftCard> giftCards = new ArrayList<>();
+    
+    @Transient
+    private int giftCardCount;
+    
+    @Transient
+    private int totalGiftCardAmount;
     
     @PrePersist
     protected void onCreate() {
@@ -51,6 +60,7 @@ public class User {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.birthDate = birthDate;
+        this.isBlacklisted = false; // 기본값 설정
     }
     
     // Getters and Setters
@@ -102,11 +112,35 @@ public class User {
         this.updatedAt = updatedAt;
     }
     
+    public boolean getIsBlacklisted() {
+        return isBlacklisted;
+    }
+    
+    public void setIsBlacklisted(boolean isBlacklisted) {
+        this.isBlacklisted = isBlacklisted;
+    }
+    
     public List<GiftCard> getGiftCards() {
         return giftCards;
     }
     
     public void setGiftCards(List<GiftCard> giftCards) {
         this.giftCards = giftCards;
+    }
+
+    public int getGiftCardCount() {
+        return giftCardCount;
+    }
+
+    public void setGiftCardCount(int giftCardCount) {
+        this.giftCardCount = giftCardCount;
+    }
+
+    public int getTotalGiftCardAmount() {
+        return totalGiftCardAmount;
+    }
+
+    public void setTotalGiftCardAmount(int totalGiftCardAmount) {
+        this.totalGiftCardAmount = totalGiftCardAmount;
     }
 }

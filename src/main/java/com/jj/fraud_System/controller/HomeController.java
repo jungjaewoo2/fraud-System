@@ -227,8 +227,15 @@ public class HomeController {
     @PostMapping("/login")
     public String login(@RequestParam String name, 
                        @RequestParam String phoneNumber,
+                       @RequestParam(required = false) String privacyAgree,
                        HttpSession session,
                        RedirectAttributes redirectAttributes) {
+        
+        // 개인정보 동의 체크 확인
+        if (privacyAgree == null || !privacyAgree.equals("on")) {
+            redirectAttributes.addFlashAttribute("error", "개인정보 처리방침에 동의해야 로그인할 수 있습니다.");
+            return "redirect:/";
+        }
         
         // 기존 사용자 인증 시도
         User user = userService.authenticate(name, phoneNumber);
@@ -265,7 +272,7 @@ public class HomeController {
     
     // 2차 인증 페이지
     @GetMapping("/verify-code")
-    public String verifyCode(@ModelAttribute("user") User user, HttpSession session, Model model) {
+    public String verifyCode(@ModelAttribute("user") User user, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         // RedirectAttributes에서 user가 없을 경우 세션에서 가져옴 (이전 코드와의 호환성을 위해)
         if (user == null || user.getId() == null) {
             user = (User) session.getAttribute("user");
@@ -277,8 +284,31 @@ public class HomeController {
             logger.debug("DEBUG: User is null, redirecting to home");
             return "redirect:/";
         }
+        
+        // 블랙리스트 사용자 접근 제한
+        if (user.getIsBlacklisted()) {
+            logger.warn("BLACKLIST: Blocked access for blacklisted user: " + user.getName() + " (ID: " + user.getId() + ")");
+            redirectAttributes.addFlashAttribute("error", "블랙리스트에 등록된 사용자입니다. 접근이 제한되었습니다.");
+            return "redirect:/";
+        }
+        
+        // 사용자의 총 상품권 금액 계산
+        List<GiftCard> existingGiftCards = giftCardService.findByUserId(user.getId());
+        int totalAmount = existingGiftCards.stream()
+                .mapToInt(GiftCard::getAmount)
+                .sum();
+        
+        // 140,000원 이상 사용자 접근 제한
+        if (totalAmount >= 140000) {
+            logger.warn("LIMIT EXCEEDED: Blocked access for user with total amount: " + totalAmount + " (ID: " + user.getId() + ")");
+            redirectAttributes.addFlashAttribute("error", 
+                String.format("총 상품권 금액이 140,000원 이상입니다. (현재 총액: %,d원) 추가 상품권 지급이 불가능합니다.", totalAmount));
+            return "redirect:/";
+        }
+        
         model.addAttribute("user", user);
-        logger.debug("DEBUG: User found, rendering verify-code page for: " + user.getName());
+        model.addAttribute("totalAmount", totalAmount);
+        logger.debug("DEBUG: User found, rendering verify-code page for: " + user.getName() + " (Total amount: " + totalAmount + ")");
         return "verify-code";
     }
     

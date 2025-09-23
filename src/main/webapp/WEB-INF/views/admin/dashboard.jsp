@@ -1,6 +1,7 @@
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -44,6 +45,27 @@
             justify-content: center;
             font-size: 1.5rem;
             color: white;
+        }
+        .border-left-primary {
+            border-left: 0.25rem solid #4e73df !important;
+        }
+        .border-left-success {
+            border-left: 0.25rem solid #1cc88a !important;
+        }
+        .progress {
+            height: 0.5rem;
+            border-radius: 10rem;
+            background-color: #eaecf4;
+        }
+        .progress-bar {
+            background-color: #4e73df;
+            border-radius: 10rem;
+        }
+        .progress-bar.bg-success {
+            background-color: #1cc88a !important;
+        }
+        .progress-bar.bg-primary {
+            background-color: #4e73df !important;
         }
     </style>
 </head>
@@ -202,6 +224,128 @@
                     </div>
                 </div>
 
+                <!-- 상품권 금액별 통계 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    상품권 금액별 통계
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- 1만원 상품권 통계 -->
+                                    <div class="col-lg-6 mb-4">
+                                        <div class="card border-left-primary shadow h-100 py-2">
+                                            <div class="card-body">
+                                                <div class="row no-gutters align-items-center">
+                                                    <div class="col mr-2">
+                                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                            1만원 상품권
+                                                        </div>
+                                                        <div class="row no-gutters align-items-center">
+                                                            <div class="col-auto">
+                                                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                                                                    ${giftCardStatistics.tenThousandCount}장
+                                                                </div>
+                                                            </div>
+                                                            <div class="col">
+                                                                <div class="progress progress-sm mr-2">
+                                                                    <c:set var="tenPercent" value="${giftCardStatistics.tenThousandCount > 0 ? (giftCardStatistics.tenThousandCount * 100 / (giftCardStatistics.tenThousandCount + giftCardStatistics.twentyThousandCount)) : 0}" />
+                                                                    <div class="progress-bar bg-primary" role="progressbar" id="tenThousandProgress"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <span class="text-success font-weight-bold">
+                                                                총액: <fmt:formatNumber value="${giftCardStatistics.tenThousandTotal}" type="number"/>원
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <i class="fas fa-won-sign fa-2x text-gray-300"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2만원 상품권 통계 -->
+                                    <div class="col-lg-6 mb-4">
+                                        <div class="card border-left-success shadow h-100 py-2">
+                                            <div class="card-body">
+                                                <div class="row no-gutters align-items-center">
+                                                    <div class="col mr-2">
+                                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                            2만원 상품권
+                                                        </div>
+                                                        <div class="row no-gutters align-items-center">
+                                                            <div class="col-auto">
+                                                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                                                                    ${giftCardStatistics.twentyThousandCount}장
+                                                                </div>
+                                                            </div>
+                                                            <div class="col">
+                                                                <div class="progress progress-sm mr-2">
+                                                                    <c:set var="twentyPercent" value="${giftCardStatistics.twentyThousandCount > 0 ? (giftCardStatistics.twentyThousandCount * 100 / (giftCardStatistics.tenThousandCount + giftCardStatistics.twentyThousandCount)) : 0}" />
+                                                                    <div class="progress-bar bg-success" role="progressbar" id="twentyThousandProgress"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <span class="text-success font-weight-bold">
+                                                                총액: <fmt:formatNumber value="${giftCardStatistics.twentyThousandTotal}" type="number"/>원
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <i class="fas fa-won-sign fa-2x text-gray-300"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 전체 통계 요약 -->
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            <div class="row text-center">
+                                                <div class="col-md-4">
+                                                    <strong>전체 상품권</strong><br>
+                                                    <span class="h4">${giftCardStatistics.tenThousandCount + giftCardStatistics.twentyThousandCount}장</span>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <strong>전체 금액</strong><br>
+                                                    <span class="h4 text-success">
+                                                        <fmt:formatNumber value="${giftCardStatistics.tenThousandTotal + giftCardStatistics.twentyThousandTotal}" type="number"/>원
+                                                    </span>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <strong>평균 금액</strong><br>
+                                                    <span class="h4">
+                                                        <c:choose>
+                                                            <c:when test="${giftCardStatistics.tenThousandCount + giftCardStatistics.twentyThousandCount > 0}">
+                                                                <fmt:formatNumber value="${(giftCardStatistics.tenThousandTotal + giftCardStatistics.twentyThousandTotal) / (giftCardStatistics.tenThousandCount + giftCardStatistics.twentyThousandCount)}" type="number" maxFractionDigits="0"/>원
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                0원
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 빠른 작업 -->
                 <div class="row">
                     <div class="col-lg-6 mb-4">
@@ -267,5 +411,26 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 프로그레스 바 너비 설정을 위한 변수 -->
+    <c:set var="tenPercent" value="${giftCardStatistics.tenThousandCount > 0 ? (giftCardStatistics.tenThousandCount * 100 / (giftCardStatistics.tenThousandCount + giftCardStatistics.twentyThousandCount)) : 0}" />
+    <c:set var="twentyPercent" value="${giftCardStatistics.twentyThousandCount > 0 ? (giftCardStatistics.twentyThousandCount * 100 / (giftCardStatistics.tenThousandCount + giftCardStatistics.twentyThousandCount)) : 0}" />
+    
+    <script>
+        // 프로그레스 바 너비 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1만원 상품권 프로그레스 바
+            const tenThousandProgress = document.getElementById('tenThousandProgress');
+            if (tenThousandProgress) {
+                tenThousandProgress.style.width = '${tenPercent}' + '%';
+            }
+            
+            // 2만원 상품권 프로그레스 바
+            const twentyThousandProgress = document.getElementById('twentyThousandProgress');
+            if (twentyThousandProgress) {
+                twentyThousandProgress.style.width = '${twentyPercent}' + '%';
+            }
+        });
+    </script>
 </body>
 </html>

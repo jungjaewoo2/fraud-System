@@ -35,6 +35,13 @@
             border-top: none;
             background-color: #f8f9fa;
         }
+        .table tbody tr:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+        .user-detail-btn {
+            white-space: nowrap;
+        }
         .user-card {
             transition: transform 0.2s;
             cursor: pointer;
@@ -148,14 +155,34 @@
                     </div>
                 </div>
 
-                <!-- 사용자 목록 -->
-                <div class="card">
-                    <div class="card-header">
+                <!-- 보기 모드 선택 -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-users me-2"></i>
                             사용자 목록
                         </h5>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary" id="cardViewBtn">
+                                    <i class="fas fa-th-large me-1"></i> 카드 보기
+                                </button>
+                                <button type="button" class="btn btn-primary" id="tableViewBtn">
+                                    <i class="fas fa-table me-1"></i> 테이블 보기
+                                </button>
+                                <button type="button" class="btn btn-success" id="exportBtn">
+                                    <i class="fas fa-file-excel me-1"></i> 엑셀 다운로드
+                                </button>
+                                <button type="button" class="btn btn-warning" id="addUserBtn" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                    <i class="fas fa-user-plus me-1"></i> 신규 사용자 등록
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <!-- 사용자 목록 -->
+                <div class="card mb-4">
                     <div class="card-body">
                         <c:choose>
                             <c:when test="${empty users}">
@@ -173,50 +200,118 @@
                                 </div>
                             </c:when>
                             <c:otherwise>
-                                <div class="row">
-                                    <c:forEach var="user" items="${users}">
-                                        <div class="col-lg-6 col-xl-4 mb-4">
-                                            <div class="card user-card h-100" onclick="viewUserDetail(${user.id})">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center mb-3">
-                                                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                                                             style="width: 50px; height: 50px;">
-                                                            <i class="fas fa-user fa-lg"></i>
+                                <!-- 카드 보기 -->
+                                <div id="cardView" style="display: none;">
+                                    <div class="row">
+                                        <c:forEach var="user" items="${users}" varStatus="loop">
+                                            <div class="col-md-6 col-lg-4 mb-4">
+                                                <div class="card user-card h-100" data-user-id="${user.id}">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                                            <h6 class="card-title mb-0">${user.name}</h6>
+                                                            <c:choose>
+                                                                <c:when test="${user.isBlacklisted}">
+                                                                    <span class="badge bg-danger">블랙리스트</span>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <span class="badge bg-success">정상</span>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
-                                                        <div>
-                                                            <h6 class="card-title mb-1">${user.name}</h6>
+                                                        <p class="card-text">
                                                             <small class="text-muted">
-                                                                <i class="fas fa-mobile-alt me-1"></i>
-                                                                ${user.phoneNumber}
+                                                                <i class="fas fa-phone me-1"></i> ${user.phoneNumber}
                                                             </small>
+                                                        </p>
+                                                        <div class="row text-center mb-3">
+                                                            <div class="col-6">
+                                                                <div class="border-end">
+                                                                    <h6 class="text-primary mb-1">${user.giftCardCount}</h6>
+                                                                    <small class="text-muted">지급 횟수</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <h6 class="text-success mb-1">
+                                                                    <fmt:formatNumber value="${user.totalGiftCardAmount}" type="number"/>원
+                                                                </h6>
+                                                                <small class="text-muted">총 지급액</small>
+                                                            </div>
                                                         </div>
+                                                        <p class="card-text">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-calendar me-1"></i>
+                                                                가입일: ${user.createdAt.toLocalDate()}
+                                                            </small>
+                                                        </p>
                                                     </div>
-                                                    
-                                                    <c:if test="${user.birthDate != null}">
-                                                        <div class="mb-2">
-                                                            <small class="text-muted">
-                                                                <i class="fas fa-birthday-cake me-1"></i>
-                                                                생년월일: 
-                                                                ${user.birthDate}
-                                                            </small>
+                                                    <div class="card-footer bg-transparent">
+                                                        <div class="d-flex justify-content-between">
+                                                            <a href="/admin/users/${user.id}" class="btn btn-sm btn-info">
+                                                                <i class="fas fa-eye me-1"></i> 보기
+                                                            </a>
+                                                            <button type="button" class="btn btn-sm btn-danger" 
+                                                                    onclick="deleteUser('${user.id}', '${user.name}');">
+                                                                <i class="fas fa-trash me-1"></i> 삭제
+                                                            </button>
                                                         </div>
-                                                    </c:if>
-                                                    
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-calendar me-1"></i>
-                                                            가입일: 
-                                                            ${user.createdAt}
-                                                        </small>
-                                                        <button type="button" class="btn btn-outline-danger btn-sm" 
-                                                                onclick="deleteUser(${user.id}, '${user.name}'); event.stopPropagation();">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </c:forEach>
+                                        </c:forEach>
+                                    </div>
+                                </div>
+
+                                <!-- 테이블 보기 -->
+                                <div id="tableView">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">이름</th>
+                                                    <th scope="col">전화번호</th>
+                                                    <th scope="col">지급 횟수</th>
+                                                    <th scope="col">총 지급액</th>
+                                                    <th scope="col">가입일</th>
+                                                    <th scope="col">블랙리스트</th>
+                                                    <th scope="col">관리</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <c:forEach var="user" items="${users}" varStatus="loop">
+                                                    <tr class="user-table-row" data-user-id="${user.id}">
+                                                        <th scope="row">${users.size() - loop.index}</th>
+                                                        <td>${user.name}</td>
+                                                        <td>${user.phoneNumber}</td>
+                                                        <td>${user.giftCardCount}회</td>
+                                                        <td><fmt:formatNumber value="${user.totalGiftCardAmount}" type="number"/>원</td>
+                                                        <td>${user.createdAt.toLocalDate()} ${user.createdAt.toLocalTime()}</td>
+                                                        <td>
+                                                            <c:choose>
+                                                                <c:when test="${user.isBlacklisted}">
+                                                                    <span class="badge bg-danger">예</span>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <span class="badge bg-success">아니오</span>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex">
+                                                                <a href="/admin/users/${user.id}" class="btn btn-sm btn-info me-2">
+                                                                    <i class="fas fa-eye"></i> 보기
+                                                                </a>
+                                                                <button type="button" class="btn btn-sm btn-danger" 
+                                                                        onclick="deleteUser('${user.id}', '${user.name}');">
+                                                                    <i class="fas fa-trash"></i> 삭제
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </c:otherwise>
                         </c:choose>
@@ -258,16 +353,162 @@
         </div>
     </div>
 
+    <!-- 신규 사용자 등록 모달 -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-plus me-2"></i>
+                        신규 사용자 등록
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" action="/admin/users/add">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="userName" class="form-label">
+                                <i class="fas fa-user me-1"></i>이름
+                            </label>
+                            <input type="text" class="form-control" id="userName" name="name" 
+                                   placeholder="사용자 이름을 입력하세요" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userPhoneNumber" class="form-label">
+                                <i class="fas fa-mobile-alt me-1"></i>핸드폰 번호
+                            </label>
+                            <input type="tel" class="form-control" id="userPhoneNumber" name="phoneNumber" 
+                                   placeholder="010-1234-5678" 
+                                   oninput="formatPhoneNumber(this)"
+                                   maxlength="13" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userBirthDate" class="form-label">
+                                <i class="fas fa-birthday-cake me-1"></i>생년월일
+                            </label>
+                            <input type="date" class="form-control" id="userBirthDate" name="birthDate" required>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>안내사항</strong><br>
+                            <small>
+                                • 신규 등록된 사용자는 자동으로 정상 상태로 설정됩니다.<br>
+                                • 동일한 이름과 핸드폰 번호로는 중복 등록이 불가능합니다.<br>
+                                • 등록 후 바로 상품권 지급이 가능합니다.
+                            </small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-user-plus me-2"></i>
+                            사용자 등록
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function viewUserDetail(userId) {
+        // 페이지 로드 시 보기 모드 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 기본적으로 테이블 보기로 설정
+            showTableView();
+            
+            // 카드 보기 버튼 이벤트
+            document.getElementById('cardViewBtn').addEventListener('click', function() {
+                showCardView();
+            });
+            
+            // 테이블 보기 버튼 이벤트
+            document.getElementById('tableViewBtn').addEventListener('click', function() {
+                showTableView();
+            });
+            
+            // 엑셀 다운로드 버튼 이벤트
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                exportToExcel();
+            });
+            
+            // 카드 클릭 시 사용자 상세 페이지로 이동
+            document.querySelectorAll('.user-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // 버튼 클릭이 아닌 경우에만 이동
+                    if (!e.target.closest('button') && !e.target.closest('a')) {
+                        const userId = this.dataset.userId;
+                        if (userId) {
+                            window.location.href = '/admin/users/' + userId;
+                        }
+                    }
+                });
+            });
+            
+            // 테이블 행 클릭 시 사용자 상세 페이지로 이동
+            document.querySelectorAll('.user-table-row').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    // 버튼 클릭이 아닌 경우에만 이동
+                    if (!e.target.closest('button') && !e.target.closest('a')) {
+                        const userId = this.dataset.userId;
+                        if (userId) {
             window.location.href = '/admin/users/' + userId;
+                        }
+                    }
+                });
+            });
+        });
+
+        function showCardView() {
+            document.getElementById('cardView').style.display = 'block';
+            document.getElementById('tableView').style.display = 'none';
+            document.getElementById('cardViewBtn').classList.remove('btn-outline-primary');
+            document.getElementById('cardViewBtn').classList.add('btn-primary');
+            document.getElementById('tableViewBtn').classList.remove('btn-primary');
+            document.getElementById('tableViewBtn').classList.add('btn-outline-primary');
+        }
+
+        function showTableView() {
+            document.getElementById('cardView').style.display = 'none';
+            document.getElementById('tableView').style.display = 'block';
+            document.getElementById('cardViewBtn').classList.remove('btn-primary');
+            document.getElementById('cardViewBtn').classList.add('btn-outline-primary');
+            document.getElementById('tableViewBtn').classList.remove('btn-outline-primary');
+            document.getElementById('tableViewBtn').classList.add('btn-primary');
+        }
+
+        function exportToExcel() {
+            // 현재 검색어 가져오기
+            const searchParam = new URLSearchParams(window.location.search).get('search') || '';
+            
+            // 엑셀 다운로드 URL 생성
+            let exportUrl = '/admin/gift-cards/export';
+            if (searchParam) {
+                exportUrl += '?search=' + encodeURIComponent(searchParam);
+            }
+            
+            // 새 창에서 다운로드 실행
+            window.open(exportUrl, '_blank');
         }
 
         function deleteUser(id, name) {
             document.getElementById('deleteForm').action = '/admin/users/delete/' + id;
             document.getElementById('deleteUserInfo').textContent = name + ' 사용자를 삭제하시겠습니까?';
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        // 핸드폰 번호 포맷팅 함수
+        function formatPhoneNumber(input) {
+            let value = input.value.replace(/\D/g, ''); // 숫자만 추출
+            if (value.length >= 11) {
+                value = value.substring(0, 11);
+            }
+            if (value.length >= 7) {
+                value = value.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/(\d{3})(\d{0,4})/, '$1-$2');
+            }
+            input.value = value;
         }
 
         // 자동으로 알림 메시지 숨기기

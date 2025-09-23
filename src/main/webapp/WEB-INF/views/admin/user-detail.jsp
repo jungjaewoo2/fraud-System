@@ -161,52 +161,135 @@
                     </div>
                 </div>
 
-                <!-- 상품권 추가 -->
+                <!-- 블랙리스트 관리 -->
                 <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user-shield me-2"></i>
+                            블랙리스트 관리
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="blacklistForm" method="post" action="/admin/users/${user.id}/blacklist">
+                            <input type="hidden" name="isBlacklisted" id="blacklistHidden" value="">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="blacklistCheckbox" 
+                                               ${user.isBlacklisted ? 'checked' : ''}
+                                               onchange="toggleBlacklistStatus()">
+                                        <label class="form-check-label" for="blacklistCheckbox">
+                                            <c:choose>
+                                                <c:when test="${user.isBlacklisted}">
+                                                    <span class="badge bg-danger me-2">블랙리스트</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="badge bg-success me-2">정상</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            이 사용자를 블랙리스트에 등록/해제
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">
+                                        블랙리스트 사용자는 상품권 지급이 제한됩니다.
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button type="submit" class="btn btn-warning" id="blacklistSubmitBtn">
+                                        <i class="fas fa-save me-2"></i>
+                                        상태 저장
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 상품권 추가 -->
+                <div class="card mb-4" id="giftCardAddSection">
                     <div class="card-header">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-plus me-2"></i>
                             상품권 추가
+                            <c:if test="${user.isBlacklisted}">
+                                <span class="badge bg-danger ms-2">지급 제한</span>
+                            </c:if>
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form method="post" action="/admin/users/${user.id}/gift-cards">
-                            <div class="row">
+                        <c:choose>
+                            <c:when test="${user.isBlacklisted}">
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>블랙리스트 사용자</strong><br>
+                                    이 사용자는 블랙리스트에 등록되어 있어 상품권 지급이 제한됩니다.
+                                    블랙리스트를 해제한 후 상품권을 지급할 수 있습니다.
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <form method="post" action="/admin/users/${user.id}/gift-cards">
+                                    <div class="row">
                                 <div class="col-md-4">
                                     <label class="form-label">상품권 금액</label>
                                     <div class="d-grid gap-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="amount" id="amount10000" value="10000" required>
+                                            <input class="form-check-input" type="radio" name="amount" id="amount10000" value="10000" required
+                                                   onchange="checkAmountLimit()">
                                             <label class="form-check-label" for="amount10000">
                                                 <i class="fas fa-coins me-1 text-success"></i>
                                                 10,000원
                                             </label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="amount" id="amount20000" value="20000" required>
+                                            <input class="form-check-input" type="radio" name="amount" id="amount20000" value="20000" required
+                                                   onchange="checkAmountLimit()">
                                             <label class="form-check-label" for="amount20000">
                                                 <i class="fas fa-coins me-1 text-success"></i>
                                                 20,000원
                                             </label>
                                         </div>
                                     </div>
+                                    <c:set var="currentTotal" value="0" />
+                                    <c:forEach var="giftCard" items="${giftCards}">
+                                        <c:set var="currentTotal" value="${currentTotal + giftCard.amount}" />
+                                    </c:forEach>
+                                    <small class="text-muted">
+                                        현재 총액: <fmt:formatNumber value="${currentTotal}" type="number"/>원 / 140,000원
+                                        <c:if test="${currentTotal >= 140000}">
+                                            <span class="badge bg-danger ms-1">한도 초과</span>
+                                        </c:if>
+                                    </small>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="issuedBy" class="form-label">지급 담당자</label>
-                                    <input type="text" class="form-control" id="issuedBy" name="issuedBy" 
-                                           placeholder="담당자 이름" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">&nbsp;</label>
-                                    <div class="d-grid">
-                                        <button type="submit" class="btn btn-success">
-                                            <i class="fas fa-plus me-2"></i>
-                                            상품권 추가
-                                        </button>
+                                        <div class="col-md-4">
+                                            <label for="issuedBy" class="form-label">지급 담당자</label>
+                                            <input type="text" class="form-control" id="issuedBy" name="issuedBy" 
+                                                   placeholder="담당자 이름" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">&nbsp;</label>
+                                            <div class="d-grid">
+                                                <c:choose>
+                                                    <c:when test="${currentTotal >= 140000}">
+                                                        <button type="button" class="btn btn-secondary" disabled 
+                                                                onclick="showAmountLimitAlert()">
+                                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                                            지급 한도 초과
+                                                        </button>
+                                                        <small class="text-muted mt-1">140,000원 한도 초과</small>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <button type="submit" class="btn btn-success" id="addGiftCardBtn">
+                                                            <i class="fas fa-plus me-2"></i>
+                                                            상품권 추가
+                                                        </button>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </form>
+                                </form>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
 
@@ -416,6 +499,70 @@
                 amount.toLocaleString() + '원 상품권을 삭제하시겠습니까?';
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
         }
+
+        function toggleBlacklistStatus() {
+            const checkbox = document.getElementById('blacklistCheckbox');
+            const hiddenInput = document.getElementById('blacklistHidden');
+            const submitBtn = document.getElementById('blacklistSubmitBtn');
+            
+            // hidden input 값 설정
+            if (checkbox.checked) {
+                hiddenInput.value = 'on';
+                submitBtn.innerHTML = '<i class="fas fa-ban me-2"></i>블랙리스트 등록';
+                submitBtn.className = 'btn btn-danger';
+            } else {
+                hiddenInput.value = '';
+                submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>블랙리스트 해제';
+                submitBtn.className = 'btn btn-success';
+            }
+        }
+
+        function checkAmountLimit() {
+            const currentTotal = ${currentTotal};
+            const maxLimit = 140000;
+            const amount10000 = document.getElementById('amount10000');
+            const amount20000 = document.getElementById('amount20000');
+            const submitBtn = document.getElementById('addGiftCardBtn');
+            
+            // 이미 140,000원 이상인 경우 함수 종료
+            if (currentTotal >= maxLimit) {
+                return;
+            }
+            
+            // 현재 선택된 금액 확인
+            let selectedAmount = 0;
+            if (amount10000 && amount10000.checked) selectedAmount = 10000;
+            if (amount20000 && amount20000.checked) selectedAmount = 20000;
+            
+            // 한도 초과 확인
+            if (currentTotal + selectedAmount > maxLimit) {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>한도 초과';
+                    submitBtn.className = 'btn btn-danger';
+                }
+                
+                // 선택된 라디오 버튼 해제
+                if (amount10000 && amount10000.checked) amount10000.checked = false;
+                if (amount20000 && amount20000.checked) amount20000.checked = false;
+            } else {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-plus me-2"></i>상품권 추가';
+                    submitBtn.className = 'btn btn-success';
+                }
+            }
+        }
+
+        function showAmountLimitAlert() {
+            alert('총 상품권 금액이 140,000원 이상인 경우 추가 상품권 등록이 불가능합니다.\n현재 총액: ' + 
+                  (${currentTotal}).toLocaleString() + '원\n한도: 140,000원');
+        }
+
+        // 페이지 로드 시 블랙리스트 상태에 따른 버튼 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleBlacklistStatus();
+        });
 
         // 자동으로 알림 메시지 숨기기
         setTimeout(function() {

@@ -20,4 +20,10 @@ public interface GiftCardRepository extends JpaRepository<GiftCard, Long> {
     
     @Query("SELECT gc FROM GiftCard gc JOIN gc.user u WHERE u.name LIKE %:name% OR u.phoneNumber LIKE %:phoneNumber%")
     List<GiftCard> findByUserNameOrPhoneNumberContaining(@Param("name") String name, @Param("phoneNumber") String phoneNumber);
+
+    @Query("SELECT COUNT(gc) FROM GiftCard gc WHERE gc.user.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT COALESCE(SUM(gc.amount), 0) FROM GiftCard gc WHERE gc.user.id = :userId")
+    int sumAmountByUserId(@Param("userId") Long userId);
 }

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ include file="header.jsp" %>
 
 <c:set var="pageTitle" value="2차 인증" />
@@ -31,6 +32,18 @@
                         <small>핸드폰: ${user.phoneNumber}</small>
                         <br>
                         <small>생년월일: ${user.birthDate}</small>
+                        <c:if test="${totalAmount != null}">
+                            <br>
+                            <small class="text-success">
+                                <i class="fas fa-coins me-1"></i>
+                                현재 총 상품권 금액: <fmt:formatNumber value="${totalAmount}" type="number"/>원
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                지급 가능 한도: <fmt:formatNumber value="${140000 - totalAmount}" type="number"/>원
+                            </small>
+                        </c:if>
                     </div>
                 </c:if>
 

@@ -6,6 +6,8 @@ import com.jj.fraud_System.repository.GiftCardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class GiftCardService {
@@ -54,5 +56,47 @@ public class GiftCardService {
     
     public List<GiftCard> searchByUserNameOrPhoneNumber(String name, String phoneNumber) {
         return giftCardRepository.findByUserNameOrPhoneNumberContaining(name, phoneNumber);
+    }
+    
+    public long countByUserId(Long userId) {
+        return giftCardRepository.countByUserId(userId);
+    }
+    
+    public int sumAmountByUserId(Long userId) {
+        return giftCardRepository.sumAmountByUserId(userId);
+    }
+    
+    /**
+     * 상품권 금액별 통계를 조회합니다.
+     * @return 금액별 개수와 총합계가 포함된 Map
+     */
+    public Map<String, Object> getGiftCardAmountStatistics() {
+        List<GiftCard> allGiftCards = findAll();
+        
+        // 1만원, 2만원 상품권 개수 계산
+        long tenThousandCount = allGiftCards.stream()
+                .mapToLong(giftCard -> giftCard.getAmount() == 10000 ? 1 : 0)
+                .sum();
+                
+        long twentyThousandCount = allGiftCards.stream()
+                .mapToLong(giftCard -> giftCard.getAmount() == 20000 ? 1 : 0)
+                .sum();
+        
+        // 1만원, 2만원 상품권 총 금액 계산
+        int tenThousandTotal = allGiftCards.stream()
+                .mapToInt(giftCard -> giftCard.getAmount() == 10000 ? giftCard.getAmount() : 0)
+                .sum();
+                
+        int twentyThousandTotal = allGiftCards.stream()
+                .mapToInt(giftCard -> giftCard.getAmount() == 20000 ? giftCard.getAmount() : 0)
+                .sum();
+        
+        Map<String, Object> statistics = new HashMap<>();
+        statistics.put("tenThousandCount", tenThousandCount);
+        statistics.put("twentyThousandCount", twentyThousandCount);
+        statistics.put("tenThousandTotal", tenThousandTotal);
+        statistics.put("twentyThousandTotal", twentyThousandTotal);
+        
+        return statistics;
     }
 }

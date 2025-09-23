@@ -30,6 +30,9 @@ public class GiftCard {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @Column(name = "is_fraud_suspected", nullable = false)
+    private boolean isFraudSuspected = false;
+    
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -52,6 +55,7 @@ public class GiftCard {
         this.user = user;
         this.amount = amount;
         this.issuedBy = issuedBy;
+        this.isFraudSuspected = false; // 기본값 설정
     }
     
     // Getters and Setters
@@ -109,5 +113,13 @@ public class GiftCard {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public boolean getIsFraudSuspected() {
+        return isFraudSuspected;
+    }
+    
+    public void setIsFraudSuspected(boolean isFraudSuspected) {
+        this.isFraudSuspected = isFraudSuspected;
     }
 }

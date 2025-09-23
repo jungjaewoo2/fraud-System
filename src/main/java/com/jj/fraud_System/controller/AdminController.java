@@ -16,10 +16,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 @Controller
 @RequestMapping("/admin")
@@ -77,11 +85,21 @@ public class AdminController {
             long adminCodeCount = adminCodes != null ? adminCodes.size() : 0;
             logger.debug("관리자 코드 수: {}", adminCodeCount);
             
+            // 상품권 금액별 통계 조회
+            logger.debug("상품권 금액별 통계 조회 시작");
+            Map<String, Object> giftCardStatistics = giftCardService.getGiftCardAmountStatistics();
+            
             model.addAttribute("userCount", userCount);
             model.addAttribute("giftCardCount", giftCardCount);
             model.addAttribute("adminCodeCount", adminCodeCount);
+            model.addAttribute("giftCardStatistics", giftCardStatistics);
             
             logger.info("대시보드 데이터 설정 완료 - 사용자: {}, 상품권: {}, 관리자코드: {}", userCount, giftCardCount, adminCodeCount);
+            logger.info("상품권 통계 - 1만원: {}개({}원), 2만원: {}개({}원)", 
+                giftCardStatistics.get("tenThousandCount"), 
+                giftCardStatistics.get("tenThousandTotal"),
+                giftCardStatistics.get("twentyThousandCount"), 
+                giftCardStatistics.get("twentyThousandTotal"));
             
         } catch (Exception e) {
             logger.error("대시보드 데이터 조회 중 오류 발생", e);
@@ -89,6 +107,14 @@ public class AdminController {
             model.addAttribute("userCount", 0);
             model.addAttribute("giftCardCount", 0);
             model.addAttribute("adminCodeCount", 0);
+            
+            // 상품권 통계 기본값 설정
+            Map<String, Object> defaultStatistics = new HashMap<>();
+            defaultStatistics.put("tenThousandCount", 0L);
+            defaultStatistics.put("twentyThousandCount", 0L);
+            defaultStatistics.put("tenThousandTotal", 0);
+            defaultStatistics.put("twentyThousandTotal", 0);
+            model.addAttribute("giftCardStatistics", defaultStatistics);
         }
         
         logger.info("대시보드 페이지 반환");
@@ -235,6 +261,15 @@ public class AdminController {
         } else {
             users = userService.findAll();
         }
+
+        // 각 사용자별 추가 정보 (지급 횟수, 총액)
+        for (User user : users) {
+            user.setGiftCardCount((int) giftCardService.countByUserId(user.getId()));
+            user.setTotalGiftCardAmount(giftCardService.sumAmountByUserId(user.getId()));
+        }
+        
+        // ID 내림차순 정렬
+        users.sort((a, b) -> Long.compare(b.getId(), a.getId()));
         
         model.addAttribute("users", users);
         model.addAttribute("search", search);
@@ -267,6 +302,38 @@ public class AdminController {
         return "redirect:/admin/gift-cards";
     }
     
+    // 블랙리스트 상태 변경 처리
+    @PostMapping("/users/{userId}/blacklist")
+    public String updateBlacklistStatus(@PathVariable Long userId,
+                                      @RequestParam(required = false) String isBlacklisted,
+                                      RedirectAttributes redirectAttributes) {
+        
+        logger.info("블랙리스트 상태 변경 요청 - 사용자 ID: {}, isBlacklisted 파라미터: {}", userId, isBlacklisted);
+        
+        User user = userService.findById(userId);
+        if (user != null) {
+            // 파라미터가 null이거나 빈 문자열인 경우 false로 처리
+            boolean blacklistStatus = "on".equals(isBlacklisted);
+            logger.info("사용자 찾음 - ID: {}, 이름: {}, 현재 블랙리스트 상태: {}, 새 상태: {}", 
+                       user.getId(), user.getName(), user.getIsBlacklisted(), blacklistStatus);
+            
+            user.setIsBlacklisted(blacklistStatus);
+            User savedUser = userService.save(user);
+            logger.info("블랙리스트 상태 저장 완료 - 저장된 상태: {}", savedUser.getIsBlacklisted());
+            
+            if (blacklistStatus) {
+                redirectAttributes.addFlashAttribute("success", "사용자가 블랙리스트에 등록되었습니다.");
+            } else {
+                redirectAttributes.addFlashAttribute("success", "사용자가 블랙리스트에서 해제되었습니다.");
+            }
+        } else {
+            logger.error("사용자를 찾을 수 없음 - ID: {}", userId);
+            redirectAttributes.addFlashAttribute("error", "사용자를 찾을 수 없습니다.");
+        }
+        
+        return "redirect:/admin/users/" + userId;
+    }
+    
     // 상품권 추가 처리
     @PostMapping("/users/{userId}/gift-cards")
     public String addGiftCard(@PathVariable Long userId,
@@ -276,6 +343,21 @@ public class AdminController {
         
         User user = userService.findById(userId);
         if (user != null) {
+            // 블랙리스트 사용자 상품권 지급 제한
+            if (user.getIsBlacklisted()) {
+                redirectAttributes.addFlashAttribute("error", "블랙리스트에 등록된 사용자에게는 상품권을 지급할 수 없습니다.");
+                return "redirect:/admin/users/" + userId;
+            }
+            
+            // 총금액 제한 확인 (140,000원 이상 제한)
+            int currentTotalAmount = giftCardService.sumAmountByUserId(userId);
+            if (currentTotalAmount + amount > 140000) {
+                redirectAttributes.addFlashAttribute("error", 
+                    String.format("총 지급 한도(140,000원)를 초과합니다. 현재 총액: %,d원, 추가 요청: %,d원", 
+                        currentTotalAmount, amount));
+                return "redirect:/admin/users/" + userId;
+            }
+            
             giftCardService.createGiftCard(user, amount, issuedBy);
             redirectAttributes.addFlashAttribute("success", "상품권이 추가되었습니다.");
         } else {
@@ -312,5 +394,105 @@ public class AdminController {
         giftCardService.deleteById(id);
         redirectAttributes.addFlashAttribute("success", "상품권이 삭제되었습니다.");
         return "redirect:/admin/users/" + userId;
+    }
+    
+    // 엑셀 다운로드
+    @GetMapping("/gift-cards/export")
+    public void exportUsersToExcel(@RequestParam(required = false) String search,
+                                 HttpServletResponse response) throws IOException {
+        
+        List<User> users;
+        if (search != null && !search.trim().isEmpty()) {
+            users = userService.searchByNameOrPhoneNumber(search, search);
+        } else {
+            users = userService.findAll();
+        }
+
+        // 각 사용자별 추가 정보 (지급 횟수, 총액)
+        for (User user : users) {
+            user.setGiftCardCount((int) giftCardService.countByUserId(user.getId()));
+            user.setTotalGiftCardAmount(giftCardService.sumAmountByUserId(user.getId()));
+        }
+        
+        // ID 내림차순 정렬
+        users.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+        
+        // CSV 형식으로 응답 설정
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"users_export.csv\"");
+        
+        // BOM 추가 (한글 깨짐 방지)
+        response.getWriter().write("\uFEFF");
+        
+        PrintWriter writer = response.getWriter();
+        
+        // 헤더 작성
+        writer.println("순번,이름,전화번호,지급 횟수,총 지급액,가입일,블랙리스트 유무");
+        
+        // 데이터 작성
+        for (int i = 0; i < users.size(); i++) {
+            User user = users.get(i);
+            writer.printf("%d,%s,%s,%d,%d,%s,%s%n",
+                users.size() - i, // 내림차순 순번
+                user.getName(),
+                user.getPhoneNumber(),
+                user.getGiftCardCount(),
+                user.getTotalGiftCardAmount(),
+                user.getCreatedAt().toLocalDate(),
+                user.getIsBlacklisted() ? "예" : "아니오"
+            );
+        }
+        
+        writer.flush();
+        writer.close();
+    }
+    
+    // 신규 사용자 등록 처리
+    @PostMapping("/users/add")
+    public String addUser(@RequestParam String name,
+                         @RequestParam String phoneNumber,
+                         @RequestParam String birthDate,
+                         RedirectAttributes redirectAttributes) {
+        
+        logger.info("신규 사용자 등록 요청 - 이름: {}, 핸드폰: {}, 생년월일: {}", name, phoneNumber, birthDate);
+        
+        // 입력값 검증
+        if (name == null || name.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "이름을 입력해주세요.");
+            return "redirect:/admin/gift-cards";
+        }
+        
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "핸드폰 번호를 입력해주세요.");
+            return "redirect:/admin/gift-cards";
+        }
+        
+        if (birthDate == null || birthDate.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "생년월일을 입력해주세요.");
+            return "redirect:/admin/gift-cards";
+        }
+        
+        try {
+            // 중복 사용자 확인 (이름과 핸드폰 번호로)
+            User existingUser = userService.authenticate(name.trim(), phoneNumber.trim());
+            if (existingUser != null) {
+                logger.warn("중복 사용자 등록 시도 - 이름: {}, 핸드폰: {}", name, phoneNumber);
+                redirectAttributes.addFlashAttribute("error", "동일한 이름과 핸드폰 번호를 가진 사용자가 이미 존재합니다.");
+                return "redirect:/admin/gift-cards";
+            }
+            
+            // 신규 사용자 생성
+            User newUser = userService.createUser(name.trim(), phoneNumber.trim(), birthDate);
+            logger.info("신규 사용자 등록 완료 - ID: {}, 이름: {}, 핸드폰: {}", newUser.getId(), name, phoneNumber);
+            
+            redirectAttributes.addFlashAttribute("success", 
+                String.format("사용자 '%s'님(핸드폰: %s)이 성공적으로 등록되었습니다.", name, phoneNumber));
+            
+        } catch (Exception e) {
+            logger.error("신규 사용자 등록 중 오류 발생 - 이름: {}, 핸드폰: {}", name, phoneNumber, e);
+            redirectAttributes.addFlashAttribute("error", "사용자 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
+        }
+        
+        return "redirect:/admin/gift-cards";
     }
 }

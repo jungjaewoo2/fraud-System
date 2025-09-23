@@ -47,6 +47,7 @@ public class UserService {
         User user = new User();
         user.setName(name);
         user.setPhoneNumber(phoneNumber);
+        user.setIsBlacklisted(false); // 기본값 설정
         
         if (birthDateStr != null && !birthDateStr.trim().isEmpty()) {
             try {

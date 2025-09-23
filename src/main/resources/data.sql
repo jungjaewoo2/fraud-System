@@ -1,5 +1,8 @@
 -- MySQL 데이터베이스용 초기 데이터 삽입
 
+-- 기존 테이블에 is_blacklisted 컬럼 추가 (이미 존재하는 경우 무시)
+ALTER TABLE user ADD COLUMN IF NOT EXISTS is_blacklisted BOOLEAN NOT NULL DEFAULT FALSE;
+
 -- 관리자 계정 패스워드 업데이트 (비밀번호: 123)
 UPDATE admin SET password = '$2a$10$luGYwvjsjHftusxnFJdDHegkYK.ubWP20iiB.uZ5S01Vr.QbVmB7m', updated_at = NOW() WHERE username = 'admin';
 
