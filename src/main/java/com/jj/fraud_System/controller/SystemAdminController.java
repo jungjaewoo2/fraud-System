@@ -4,10 +4,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class SystemController {
-
-    @GetMapping("/system")
-    public String system() {
-        return "redirect:/";
+public class SystemAdminController {
+    
+    @GetMapping("/system/admin/login")
+    public String systemAdminLogin() {
+        return "redirect:/admin/login";
     }
 }

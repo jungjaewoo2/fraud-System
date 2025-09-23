@@ -8,12 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 @SpringBootApplication
-public class FraudSystemApplication extends SpringBootServletInitializer {
+public class FraudSystemApplication {
 
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(FraudSystemApplication.class);
-	}
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(FraudSystemApplication.class, args);
