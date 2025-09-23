@@ -20,10 +20,12 @@
                             ${user.name}님의 상품권 지급 내역
                         </p>
                     </div>
-                    <a href="/gift-card" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>
-                        새 상품권 지급
-                    </a>
+                    <!--<div class="btn-group">
+                        <a href="/gift-card" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            새 상품권 지급
+                        </a>
+                    </div>--->
                 </div>
                 
                 <c:if test="${success != null}">
@@ -179,6 +181,47 @@
         document.getElementById('deleteForm').action = '/history/delete/' + id;
         new bootstrap.Modal(document.getElementById('deleteModal')).show();
     }
+
+    // 브라우저 뒤로가기 시 메인 페이지로 이동
+    document.addEventListener('DOMContentLoaded', function() {
+        // 히스토리에 현재 페이지를 메인 페이지로 교체
+        history.replaceState({page: 'main'}, '', '/');
+        
+        // 뒤로가기 이벤트 처리
+        window.addEventListener('popstate', function(event) {
+            // 뒤로가기 시 메인 페이지로 이동
+            window.location.href = '/';
+        });
+        
+        // 모바일에서 뒤로가기 제스처 처리 (터치 이벤트)
+        let startX = 0;
+        let startY = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, false);
+        
+        document.addEventListener('touchend', function(e) {
+            if (!startX || !startY) {
+                return;
+            }
+            
+            let endX = e.changedTouches[0].clientX;
+            let endY = e.changedTouches[0].clientY;
+            
+            let diffX = startX - endX;
+            let diffY = startY - endY;
+            
+            // 오른쪽에서 왼쪽으로 스와이프 (뒤로가기 제스처)
+            if (Math.abs(diffX) > Math.abs(diffY) && diffX > 50) {
+                window.location.href = '/';
+            }
+            
+            startX = 0;
+            startY = 0;
+        }, false);
+    });
 </script>
 
 <%@ include file="footer.jsp" %>

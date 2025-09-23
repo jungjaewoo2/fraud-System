@@ -46,7 +46,7 @@
                             <input class="form-check-input" type="checkbox" id="privacyAgree" name="privacyAgree">
                             <label class="form-check-label" for="privacyAgree">
                                 <i class="fas fa-shield-alt me-2"></i>
-                                <a href="#" id="privacyLink">개인정보 처리방침</a>에 동의합니다
+                                <a href="#" id="privacyLink">개인정보 처리방침 동의 [보기]</a>
                             </label>
                         </div>
                     </div>

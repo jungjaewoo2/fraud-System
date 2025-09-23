@@ -598,24 +598,18 @@
 
         function exportToExcel() {
             console.log('exportToExcel function called');
+            // 현재 검색어 가져오기
             const searchParam = new URLSearchParams(window.location.search).get('search') || '';
             
+            // 엑셀 다운로드 URL 생성
             let exportUrl = '/admin/gift-cards/export';
             if (searchParam) {
                 exportUrl += '?search=' + encodeURIComponent(searchParam);
             }
             
-            console.log('Initiating Excel download from:', exportUrl);
-            
-            // 동적으로 <a> 태그를 생성하여 다운로드
-            const link = document.createElement('a');
-            link.href = exportUrl;
-            link.download = 'users_export.csv'; // 다운로드될 파일명 설정
-            document.body.appendChild(link); // DOM에 추가 (필수)
-            link.click(); // 클릭 이벤트 발생
-            document.body.removeChild(link); // DOM에서 제거
-            
-            console.log('Excel download initiated without page navigation.');
+            console.log('Opening export URL:', exportUrl);
+            // 새 창에서 다운로드 실행
+            window.open(exportUrl, '_blank');
         }
 
         function deleteUser(id, name) {

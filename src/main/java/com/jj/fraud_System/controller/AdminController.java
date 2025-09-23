@@ -254,25 +254,78 @@ public class AdminController {
     // 상품권 관리 페이지
     @GetMapping("/gift-cards")
     public String giftCardManagement(Model model, 
-                                   @RequestParam(required = false) String search) {
-        List<User> users;
-        if (search != null && !search.trim().isEmpty()) {
-            users = userService.searchByNameOrPhoneNumber(search, search);
-        } else {
-            users = userService.findAll();
-        }
-
-        // 각 사용자별 추가 정보 (지급 횟수, 총액)
-        for (User user : users) {
-            user.setGiftCardCount((int) giftCardService.countByUserId(user.getId()));
-            user.setTotalGiftCardAmount(giftCardService.sumAmountByUserId(user.getId()));
+                                   @RequestParam(required = false) String search,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "10") int size) {
+        
+        try {
+            logger.info("상품권 관리 페이지 접근 - search: {}, page: {}, size: {}", search, page, size);
+            
+            // 페이징을 위한 전체 사용자 수 계산
+            List<User> allUsers;
+            if (search != null && !search.trim().isEmpty()) {
+                logger.debug("사용자 검색 실행: {}", search);
+                allUsers = userService.searchByNameOrPhoneNumber(search, search);
+            } else {
+                logger.debug("전체 사용자 조회 실행");
+                allUsers = userService.findAll();
+            }
+            
+            logger.debug("전체 사용자 수: {}", allUsers.size());
+            
+            // ID 내림차순 정렬 (페이징 전에 정렬)
+            allUsers.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+            
+            // 페이징 계산
+            int totalUsers = allUsers.size();
+            int totalPages = totalUsers > 0 ? (int) Math.ceil((double) totalUsers / size) : 1;
+            int startIndex = page * size;
+            int endIndex = Math.min(startIndex + size, totalUsers);
+            
+            // 현재 페이지에 해당하는 사용자 목록 추출
+            List<User> users;
+            if (startIndex >= totalUsers) {
+                // 페이지가 범위를 벗어난 경우 빈 리스트
+                users = List.of();
+            } else {
+                users = allUsers.subList(startIndex, endIndex);
+            }
+            
+            logger.debug("현재 페이지 사용자 수: {}", users.size());
+            
+            // 각 사용자별 추가 정보 (지급 횟수, 총액)
+            for (User user : users) {
+                try {
+                    user.setGiftCardCount((int) giftCardService.countByUserId(user.getId()));
+                    user.setTotalGiftCardAmount(giftCardService.sumAmountByUserId(user.getId()));
+                } catch (Exception e) {
+                    logger.warn("사용자 {} 정보 설정 중 오류: {}", user.getId(), e.getMessage());
+                    user.setGiftCardCount(0);
+                    user.setTotalGiftCardAmount(0);
+                }
+            }
+            
+            model.addAttribute("users", users);
+            model.addAttribute("search", search);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("totalElements", totalUsers);
+            model.addAttribute("size", size);
+            model.addAttribute("endIndex", endIndex);
+            model.addAttribute("hasPrevious", page > 0);
+            model.addAttribute("hasNext", page < totalPages - 1);
+            
+            logger.info("상품권 관리 페이지 설정 완료 - 사용자: {}, 총 페이지: {}", users.size(), totalPages);
+            
+        } catch (Exception e) {
+            logger.error("상품권 관리 페이지 처리 중 오류 발생", e);
+            model.addAttribute("error", "데이터를 불러오는 중 오류가 발생했습니다.");
+            model.addAttribute("users", List.of());
+            model.addAttribute("totalElements", 0);
+            model.addAttribute("totalPages", 1);
+            model.addAttribute("currentPage", 0);
         }
         
-        // ID 내림차순 정렬
-        users.sort((a, b) -> Long.compare(b.getId(), a.getId()));
-        
-        model.addAttribute("users", users);
-        model.addAttribute("search", search);
         return "admin/gift-card-management";
     }
     
@@ -401,17 +454,30 @@ public class AdminController {
     public void exportUsersToExcel(@RequestParam(required = false) String search,
                                  HttpServletResponse response) throws IOException {
         
-        List<User> users;
-        if (search != null && !search.trim().isEmpty()) {
-            users = userService.searchByNameOrPhoneNumber(search, search);
-        } else {
-            users = userService.findAll();
-        }
+        try {
+            logger.info("사용자 엑셀 다운로드 요청 - search: {}", search);
+            
+            List<User> users;
+            if (search != null && !search.trim().isEmpty()) {
+                logger.debug("사용자 검색 실행: {}", search);
+                users = userService.searchByNameOrPhoneNumber(search, search);
+            } else {
+                logger.debug("전체 사용자 조회 실행");
+                users = userService.findAll();
+            }
+            
+            logger.debug("다운로드할 사용자 수: {}", users.size());
 
         // 각 사용자별 추가 정보 (지급 횟수, 총액)
         for (User user : users) {
-            user.setGiftCardCount((int) giftCardService.countByUserId(user.getId()));
-            user.setTotalGiftCardAmount(giftCardService.sumAmountByUserId(user.getId()));
+            try {
+                user.setGiftCardCount((int) giftCardService.countByUserId(user.getId()));
+                user.setTotalGiftCardAmount(giftCardService.sumAmountByUserId(user.getId()));
+            } catch (Exception e) {
+                logger.warn("사용자 {} 정보 설정 중 오류: {}", user.getId(), e.getMessage());
+                user.setGiftCardCount(0);
+                user.setTotalGiftCardAmount(0);
+            }
         }
         
         // ID 내림차순 정렬
@@ -427,24 +493,48 @@ public class AdminController {
         PrintWriter writer = response.getWriter();
         
         // 헤더 작성
-        writer.println("순번,이름,전화번호,지급 횟수,총 지급액,가입일,블랙리스트 유무");
+        writer.println("순번,이름,전화번호,생년월일,지급 횟수,총 지급액,가입일,블랙리스트 유무");
         
         // 데이터 작성
         for (int i = 0; i < users.size(); i++) {
             User user = users.get(i);
-            writer.printf("%d,%s,%s,%d,%d,%s,%s%n",
-                users.size() - i, // 내림차순 순번
-                user.getName(),
-                user.getPhoneNumber(),
-                user.getGiftCardCount(),
-                user.getTotalGiftCardAmount(),
-                user.getCreatedAt().toLocalDate(),
-                user.getIsBlacklisted() ? "예" : "아니오"
-            );
+            try {
+                writer.printf("%d,%s,%s,%s,%d,%d,%s,%s%n",
+                    users.size() - i, // 내림차순 순번
+                    user.getName() != null ? user.getName() : "",
+                    user.getPhoneNumber() != null ? user.getPhoneNumber() : "",
+                    user.getBirthDate() != null ? user.getBirthDate().toString() : "",
+                    user.getGiftCardCount(),
+                    user.getTotalGiftCardAmount(),
+                    user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate() : "",
+                    user.getIsBlacklisted() ? "예" : "아니오"
+                );
+            } catch (Exception e) {
+                logger.warn("사용자 {} 데이터 작성 중 오류: {}", user.getId(), e.getMessage());
+                // 기본값으로 작성
+                writer.printf("%d,%s,%s,%s,%d,%d,%s,%s%n",
+                    users.size() - i,
+                    "",
+                    "",
+                    "",
+                    0,
+                    0,
+                    "",
+                    "아니오"
+                );
+            }
         }
         
-        writer.flush();
-        writer.close();
+            writer.flush();
+            writer.close();
+            logger.info("사용자 엑셀 다운로드 완료 - {}명", users.size());
+            
+        } catch (Exception e) {
+            logger.error("사용자 엑셀 다운로드 중 오류 발생", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("text/plain; charset=UTF-8");
+            response.getWriter().write("다운로드 중 오류가 발생했습니다.");
+        }
     }
     
     // 신규 사용자 등록 처리

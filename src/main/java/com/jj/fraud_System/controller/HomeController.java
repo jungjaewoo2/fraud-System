@@ -311,6 +311,7 @@ public class HomeController {
         model.addAttribute("user", user);
         model.addAttribute("totalAmount", totalAmount);
         logger.debug("DEBUG: User found, rendering verify-code page for: " + user.getName() + " (Total amount: " + totalAmount + ")");
+        logger.info("INFO: Returning verify-code view for user: " + user.getName() + " (ID: " + user.getId() + ")");
         return "verify-code";
     }
     
@@ -366,13 +367,29 @@ public class HomeController {
                 .mapToInt(GiftCard::getAmount)
                 .sum();
         
+        // 오늘 지급된 금액 계산
+        int dailyAmount = giftCardService.getTodayAmountByUserId(user.getId());
+        
         // 140,000원 제한 확인
         boolean isLimitExceeded = totalAmount >= 140000;
+        
+        // 1일 20,000원 제한 확인
+        boolean isDailyLimitExceeded = dailyAmount >= 20000;
+        
+        // 다음 지급 가능 시간 계산 (내일 00:00)
+        String nextAvailableTime = "";
+        if (isDailyLimitExceeded) {
+            LocalDateTime tomorrow = LocalDateTime.now().plusDays(1).withHour(0).withMinute(0).withSecond(0);
+            nextAvailableTime = tomorrow.toString().substring(0, 16).replace('T', ' ');
+        }
         
         model.addAttribute("user", user);
         model.addAttribute("adminCode", adminCode);
         model.addAttribute("totalAmount", totalAmount);
+        model.addAttribute("dailyAmount", dailyAmount);
         model.addAttribute("isLimitExceeded", isLimitExceeded);
+        model.addAttribute("isDailyLimitExceeded", isDailyLimitExceeded);
+        model.addAttribute("nextAvailableTime", nextAvailableTime);
         model.addAttribute("remainingAmount", Math.max(0, 140000 - totalAmount));
         
         return "gift-card";
@@ -397,6 +414,24 @@ public class HomeController {
         int totalAmount = existingGiftCards.stream()
                 .mapToInt(GiftCard::getAmount)
                 .sum();
+        
+        // 오늘 지급된 금액 계산
+        int dailyAmount = giftCardService.getTodayAmountByUserId(user.getId());
+        
+        // 1일 20,000원 제한 확인
+        if (dailyAmount >= 20000) {
+            redirectAttributes.addFlashAttribute("error", 
+                "동일한 사용자에게 1일 기준으로 20,000원 이상 지급할 수 없습니다. 내일 다시 시도해주세요.");
+            return "redirect:/gift-card";
+        }
+        
+        // 추가 지급 시 일일 금액이 20,000원을 초과하는지 확인
+        if (dailyAmount + amount > 20000) {
+            redirectAttributes.addFlashAttribute("error", 
+                String.format("오늘 지급 후 일일 금액이 20,000원을 초과합니다. (현재: %,d원, 지급 가능: %,d원)", 
+                    dailyAmount, 20000 - dailyAmount));
+            return "redirect:/gift-card";
+        }
         
         // 140,000원 제한 확인
         if (totalAmount >= 140000) {

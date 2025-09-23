@@ -25,7 +25,18 @@
                     </div>
                 </c:if>
                 
-                <form method="post" action="/gift-card" ${isLimitExceeded ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
+                <c:if test="${isDailyLimitExceeded}">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-clock me-2"></i>
+                        <strong>일일 지급 한도를 초과했습니다.</strong>
+                        <br>
+                        <small>동일한 사용자에게 1일 기준으로 20,000원 이상 지급할 수 없습니다.</small>
+                        <br>
+                        <small class="text-muted">다음 지급 가능 시간: ${nextAvailableTime}</small>
+                    </div>
+                </c:if>
+                
+                <form method="post" action="/gift-card" ${isLimitExceeded || isDailyLimitExceeded ? 'style="opacity: 0.5; pointer-events: none;"' : ''}>
                     <div class="mb-4">
                         <label class="form-label">
                             <i class="fas fa-won-sign me-2"></i>상품권 금액
@@ -34,9 +45,9 @@
                             <div class="col-6">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="amount" id="amount10000" value="10000" 
-                                           required ${isLimitExceeded ? 'disabled' : ''}>
+                                           required ${isLimitExceeded || isDailyLimitExceeded ? 'disabled' : ''}>
                                     <label class="form-check-label" for="amount10000" 
-                                           ${isLimitExceeded ? 'style="color: #6c757d;"' : ''}>
+                                           ${isLimitExceeded || isDailyLimitExceeded ? 'style="color: #6c757d;"' : ''}>
                                         <i class="fas fa-coins me-1 text-success"></i>
                                         10,000원
                                     </label>
@@ -45,9 +56,9 @@
                             <div class="col-6">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="amount" id="amount20000" value="20000" 
-                                           required ${isLimitExceeded || (totalAmount + 20000 > 140000) ? 'disabled' : ''}>
+                                           required ${isLimitExceeded || isDailyLimitExceeded || (totalAmount + 20000 > 140000) ? 'disabled' : ''}>
                                     <label class="form-check-label" for="amount20000" 
-                                           ${isLimitExceeded || (totalAmount + 20000 > 140000) ? 'style="color: #6c757d;"' : ''}>
+                                           ${isLimitExceeded || isDailyLimitExceeded || (totalAmount + 20000 > 140000) ? 'style="color: #6c757d;"' : ''}>
                                         <i class="fas fa-coins me-1 text-success"></i>
                                         20,000원
                                     </label>
@@ -56,7 +67,7 @@
                         </div>
                         
                         <!-- 20,000원 선택 불가 시 안내 메시지 -->
-                        <c:if test="${!isLimitExceeded && (totalAmount + 20000 > 140000)}">
+                        <c:if test="${!isLimitExceeded && !isDailyLimitExceeded && (totalAmount + 20000 > 140000)}">
                             <div class="alert alert-warning mt-2">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
                                 <strong>20,000원을 선택할 수 없습니다.</strong><br>
@@ -67,6 +78,9 @@
                         <div class="form-text text-info">
                             <i class="fas fa-info-circle me-1"></i>
                             상품권 지급된 총금액: <fmt:formatNumber value="${totalAmount}" pattern="#,###"/>원
+                            <c:if test="${dailyAmount != null}">
+                                | 오늘 지급된 금액: <fmt:formatNumber value="${dailyAmount}" pattern="#,###"/>원
+                            </c:if>
                         </div>
                     </div>
                     
@@ -84,9 +98,12 @@
                     </div>
                     
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-warning btn-lg" ${isLimitExceeded ? 'disabled' : ''}>
+                        <button type="submit" class="btn btn-warning btn-lg" ${isLimitExceeded || isDailyLimitExceeded ? 'disabled' : ''}>
                             <i class="fas fa-gift me-2"></i>
                             <c:choose>
+                                <c:when test="${isDailyLimitExceeded}">
+                                    일일 지급 한도 초과
+                                </c:when>
                                 <c:when test="${isLimitExceeded}">
                                     지급 한도 도달
                                 </c:when>

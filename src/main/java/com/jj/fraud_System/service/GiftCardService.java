@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Service
 public class GiftCardService {
@@ -98,5 +100,22 @@ public class GiftCardService {
         statistics.put("twentyThousandTotal", twentyThousandTotal);
         
         return statistics;
+    }
+    
+    /**
+     * 특정 사용자의 오늘 지급된 상품권 금액 총합을 조회합니다.
+     * @param userId 사용자 ID
+     * @return 오늘 지급된 총 금액
+     */
+    public int getTodayAmountByUserId(Long userId) {
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);
+        
+        List<GiftCard> todayGiftCards = giftCardRepository.findByUserIdAndIssuedAtBetween(
+            userId, startOfDay, endOfDay);
+        
+        return todayGiftCards.stream()
+                .mapToInt(GiftCard::getAmount)
+                .sum();
     }
 }

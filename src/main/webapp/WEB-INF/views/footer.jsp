@@ -16,12 +16,21 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 자동으로 알림 메시지 숨기기
+        // 자동으로 알림 메시지 숨기기 (verify-code 페이지 제외)
         setTimeout(function() {
+            // verify-code 페이지에서는 자동 숨기기 비활성화
+            if (window.location.pathname === '/verify-code') {
+                console.log('verify-code page detected, skipping auto-hide');
+                return;
+            }
+            
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(function(alert) {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
+                // 사용자 정보 박스는 제외
+                if (!alert.classList.contains('user-info-box')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
             });
         }, 5000);
         

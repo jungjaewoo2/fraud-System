@@ -24,46 +24,45 @@
                     </div>
                 </c:if>
                 
-                <!-- 사용자 정보 박스 - 3.png 형태로 변경 -->
+                <!-- 사용자 정보 박스 - 1.png 형태 유지 (자동 숨기기 방지) -->
                 <c:if test="${user != null}">
-                    <div class="user-info-box mb-4" style="background-color: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; padding: 16px;">
-                        <!-- 사용자 환영 메시지 -->
-                        <div class="mb-2">
+                    <div class="user-info-box mb-4" style="background-color: #e3f2fd; border: 1px solid #bbdefb; border-radius: 8px; padding: 16px;"
+                        <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-user me-2 text-primary"></i>
                             <strong class="text-primary">${user.name}</strong>님 환영합니다.
                         </div>
-                        
-                        <!-- 핸드폰 번호 -->
-                        <div class="mb-1">
-                            <small class="text-muted">핸드폰: ${user.phoneNumber}</small>
-                        </div>
-                        
-                        <!-- 생년월일 -->
-                        <div class="mb-1">
-                            <small class="text-muted">생년월일: ${user.birthDate}</small>
-                        </div>
-                        
-                        <c:if test="${totalAmount != null}">
-                            <!-- 현재 총 상품권 금액 -->
-                            <div class="mb-1">
-                                <small class="text-success">
-                                    <i class="fas fa-coins me-1"></i>
-                                    현재 총 상품권 금액: <fmt:formatNumber value="${totalAmount}" type="number"/>원
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-mobile-alt me-1"></i>
+                                    핸드폰: ${user.phoneNumber}
                                 </small>
                             </div>
-                            
-                            <!-- 지급 가능 한도 -->
-                            <div class="mb-1">
+                            <div class="col-md-6">
                                 <small class="text-muted">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    지급 가능 한도: <fmt:formatNumber value="${140000 - totalAmount}" type="number"/>원
+                                    <i class="fas fa-birthday-cake me-1"></i>
+                                    생년월일: ${user.birthDate}
                                 </small>
+                            </div>
+                        </div>
+                        <c:if test="${totalAmount != null}">
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    <small class="text-success">
+                                        <i class="fas fa-coins me-1"></i>
+                                        현재 총 상품권 금액: <fmt:formatNumber value="${totalAmount}" type="number"/>원
+                                    </small>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        지급 가능 한도: <fmt:formatNumber value="${140000 - totalAmount}" type="number"/>원
+                                    </small>
+                                </div>
                             </div>
                         </c:if>
                     </div>
                 </c:if>
-
-
 
                 <form method="post" action="/verify-code">
                     <div class="mb-4">

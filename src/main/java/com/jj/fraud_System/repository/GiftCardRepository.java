@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Repository
 public interface GiftCardRepository extends JpaRepository<GiftCard, Long> {
@@ -26,4 +27,9 @@ public interface GiftCardRepository extends JpaRepository<GiftCard, Long> {
 
     @Query("SELECT COALESCE(SUM(gc.amount), 0) FROM GiftCard gc WHERE gc.user.id = :userId")
     int sumAmountByUserId(@Param("userId") Long userId);
+    
+    @Query("SELECT gc FROM GiftCard gc WHERE gc.user.id = :userId AND gc.issuedAt BETWEEN :startDate AND :endDate ORDER BY gc.issuedAt DESC")
+    List<GiftCard> findByUserIdAndIssuedAtBetween(@Param("userId") Long userId, 
+                                                  @Param("startDate") LocalDateTime startDate, 
+                                                  @Param("endDate") LocalDateTime endDate);
 }
