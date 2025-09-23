@@ -59,7 +59,9 @@ public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
-    String host = "http://localhost:8080";
+//    String host = "http://localhost:8080";
+
+    String host = "https://www.flyco88.com";
 
 
     @Autowired
