@@ -6,8 +6,5 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class SystemAdminController {
     
-    @GetMapping("/system/admin/login")
-    public String systemAdminLogin() {
-        return "redirect:/admin/login";
-    }
+
 }

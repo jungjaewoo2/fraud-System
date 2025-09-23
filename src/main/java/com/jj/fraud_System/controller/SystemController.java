@@ -6,8 +6,5 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class SystemController {
 
-    @GetMapping("/system")
-    public String system() {
-        return "redirect:/";
-    }
+
 }

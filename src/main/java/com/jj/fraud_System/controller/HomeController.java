@@ -61,7 +61,7 @@ public class HomeController {
 
 //    String host = "http://localhost:8080";
 
-    String host = "http://flyco88.com";
+    String host = "https://www.flyco88.com";
 
 
     @Autowired
