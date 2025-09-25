@@ -205,12 +205,13 @@ public class AdminController {
     @PostMapping("/codes")
     public String addCode(@RequestParam String adminName,
                         @RequestParam String codeNumber,
+                        @RequestParam Integer money,
                         RedirectAttributes redirectAttributes) {
         
         if (adminCodeService.existsByCodeNumber(codeNumber)) {
             redirectAttributes.addFlashAttribute("error", "이미 존재하는 코드번호입니다.");
         } else {
-            adminCodeService.createAdminCode(adminName, codeNumber);
+            adminCodeService.createAdminCode(adminName, codeNumber, money);
             redirectAttributes.addFlashAttribute("success", "코드가 추가되었습니다.");
         }
         
@@ -222,6 +223,7 @@ public class AdminController {
     public String editCode(@PathVariable Long id,
                          @RequestParam String adminName,
                          @RequestParam String codeNumber,
+                         @RequestParam Integer money,
                          RedirectAttributes redirectAttributes) {
         
         AdminCode adminCode = adminCodeService.findById(id);
@@ -233,6 +235,7 @@ public class AdminController {
             } else {
                 adminCode.setAdminName(adminName);
                 adminCode.setCodeNumber(codeNumber);
+                adminCode.setMoney(money);
                 adminCodeService.save(adminCode);
                 redirectAttributes.addFlashAttribute("success", "코드가 수정되었습니다.");
             }
@@ -249,6 +252,35 @@ public class AdminController {
         adminCodeService.deleteById(id);
         redirectAttributes.addFlashAttribute("success", "코드가 삭제되었습니다.");
         return "redirect:/admin/codes";
+    }
+    
+    // 코드 상세 조회 (새창)
+    @GetMapping("/codes/detail/{id}")
+    public String codeDetail(@PathVariable Long id, Model model) {
+        AdminCode adminCode = adminCodeService.findById(id);
+        if (adminCode == null) {
+            return "redirect:/admin/codes";
+        }
+        
+        // 오늘 발행한 상품권 목록 조회 (관리자 이름으로 매칭)
+        List<GiftCard> todayGiftCards = giftCardService.getTodayGiftCardsByCode(adminCode.getAdminName());
+        
+        // 오늘 발행한 총 금액 계산
+        int todayTotalAmount = giftCardService.getTodayTotalAmountByCode(adminCode.getAdminName());
+        
+        // 차액 계산 (지급 금액 - 발행 금액)
+        int difference = adminCode.getMoney() - todayTotalAmount;
+        
+        // 오늘 날짜
+        java.util.Date today = java.sql.Date.valueOf(java.time.LocalDate.now());
+        
+        model.addAttribute("adminCode", adminCode);
+        model.addAttribute("todayGiftCards", todayGiftCards);
+        model.addAttribute("todayTotalAmount", todayTotalAmount);
+        model.addAttribute("difference", difference);
+        model.addAttribute("today", today);
+        
+        return "admin/code-detail";
     }
     
     // 상품권 관리 페이지

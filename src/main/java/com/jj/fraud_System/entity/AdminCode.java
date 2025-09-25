@@ -17,6 +17,9 @@ public class AdminCode {
     @Column(name = "code_number", unique = true, nullable = false, length = 20)
     private String codeNumber;
     
+    @Column(name = "money", nullable = false)
+    private Integer money;
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -43,6 +46,12 @@ public class AdminCode {
         this.codeNumber = codeNumber;
     }
     
+    public AdminCode(String adminName, String codeNumber, Integer money) {
+        this.adminName = adminName;
+        this.codeNumber = codeNumber;
+        this.money = money;
+    }
+    
     // Getters and Setters
     public Long getId() {
         return id;
@@ -66,6 +75,14 @@ public class AdminCode {
     
     public void setCodeNumber(String codeNumber) {
         this.codeNumber = codeNumber;
+    }
+    
+    public Integer getMoney() {
+        return money;
+    }
+    
+    public void setMoney(Integer money) {
+        this.money = money;
     }
     
     public LocalDateTime getCreatedAt() {

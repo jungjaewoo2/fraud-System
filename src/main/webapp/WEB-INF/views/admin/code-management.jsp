@@ -129,12 +129,17 @@
                                     <input type="text" class="form-control" id="adminName" name="adminName" 
                                            placeholder="관리자 이름" required>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <label for="codeNumber" class="form-label">코드 번호</label>
                                     <input type="text" class="form-control code-badge" id="codeNumber" name="codeNumber" 
                                            placeholder="CODE001" required>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <label for="money" class="form-label">지급 금액</label>
+                                    <input type="number" class="form-control" id="money" name="money" 
+                                           placeholder="10000" min="0" required>
+                                </div>
+                                <div class="col-md-3">
                                     <label class="form-label">&nbsp;</label>
                                     <div class="d-grid">
                                         <button type="submit" class="btn btn-primary">
@@ -184,6 +189,7 @@
                                                 <th style="width: 60px;">순번</th>
                                                 <th>관리자 이름</th>
                                                 <th>코드 번호</th>
+                                                <th>지급 금액</th>
                                                 <th>
                                                     등록일 
                                                     <i class="fas fa-sort-down text-primary ms-1" title="최신순 정렬"></i>
@@ -209,16 +215,25 @@
                                                         </span>
                                                     </td>
                                                     <td>
+                                                        <span class="fw-bold text-success">
+                                                            <fmt:formatNumber value="${code.money}" type="number" pattern="#,##0"/>원
+                                                        </span>
+                                                    </td>
+                                                    <td>
                                                         ${code.createdAt.toLocalDate()}
                                                     </td>
                                                     <td>
                                                         <div class="btn-group btn-group-sm" role="group">
+                                                            <button type="button" class="btn btn-outline-info" 
+                                                                    onclick="viewCodeDetail(${code.id})" title="상세보기">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
                                                             <button type="button" class="btn btn-outline-primary" 
-                                                                    onclick="editCode(${code.id}, '${code.adminName}', '${code.codeNumber}')">
+                                                                    onclick="editCode(${code.id}, '${code.adminName}', '${code.codeNumber}', ${code.money})" title="수정">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
                                                             <button type="button" class="btn btn-outline-danger" 
-                                                                    onclick="deleteCode(${code.id}, '${code.adminName}')">
+                                                                    onclick="deleteCode(${code.id}, '${code.adminName}')" title="삭제">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
                                                         </div>
@@ -321,6 +336,10 @@
                             <label for="editCodeNumber" class="form-label">코드 번호</label>
                             <input type="text" class="form-control code-badge" id="editCodeNumber" name="codeNumber" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="editMoney" class="form-label">지급 금액</label>
+                            <input type="number" class="form-control" id="editMoney" name="money" min="0" required>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
@@ -368,10 +387,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function editCode(id, adminName, codeNumber) {
+        function viewCodeDetail(id) {
+            // 새창으로 코드 상세 페이지 열기
+            const url = '/admin/codes/detail/' + id;
+            const windowFeatures = 'width=1200,height=800,scrollbars=yes,resizable=yes';
+            window.open(url, 'codeDetail', windowFeatures);
+        }
+
+        function editCode(id, adminName, codeNumber, money) {
             document.getElementById('editForm').action = '/admin/codes/edit/' + id;
             document.getElementById('editAdminName').value = adminName;
             document.getElementById('editCodeNumber').value = codeNumber;
+            document.getElementById('editMoney').value = money;
             new bootstrap.Modal(document.getElementById('editModal')).show();
         }
 

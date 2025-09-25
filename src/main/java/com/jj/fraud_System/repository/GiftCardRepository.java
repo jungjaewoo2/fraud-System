@@ -32,4 +32,9 @@ public interface GiftCardRepository extends JpaRepository<GiftCard, Long> {
     List<GiftCard> findByUserIdAndIssuedAtBetween(@Param("userId") Long userId, 
                                                   @Param("startDate") LocalDateTime startDate, 
                                                   @Param("endDate") LocalDateTime endDate);
+    
+    @Query("SELECT gc FROM GiftCard gc WHERE gc.issuedBy = :codeNumber AND gc.issuedAt BETWEEN :startDate AND :endDate ORDER BY gc.issuedAt DESC")
+    List<GiftCard> findByIssuedByAndIssuedAtBetweenOrderByIssuedAtDesc(@Param("codeNumber") String codeNumber,
+                                                                       @Param("startDate") LocalDateTime startDate,
+                                                                       @Param("endDate") LocalDateTime endDate);
 }

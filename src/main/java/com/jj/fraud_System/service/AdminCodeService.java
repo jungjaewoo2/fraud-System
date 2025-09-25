@@ -50,6 +50,11 @@ public class AdminCodeService {
         return save(adminCode);
     }
     
+    public AdminCode createAdminCode(String adminName, String codeNumber, Integer money) {
+        AdminCode adminCode = new AdminCode(adminName, codeNumber, money);
+        return save(adminCode);
+    }
+    
     // 페이징과 정렬이 적용된 조회 (최신 순으로 내림차순)
     public Page<AdminCode> findAllPaged(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));

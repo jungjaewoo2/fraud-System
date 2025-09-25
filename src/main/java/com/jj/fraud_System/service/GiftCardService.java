@@ -118,4 +118,29 @@ public class GiftCardService {
                 .mapToInt(GiftCard::getAmount)
                 .sum();
     }
+    
+    /**
+     * 특정 코드로 오늘 발행한 상품권 목록을 조회합니다.
+     * @param codeNumber 코드 번호
+     * @return 오늘 발행한 상품권 목록
+     */
+    public List<GiftCard> getTodayGiftCardsByCode(String codeNumber) {
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);
+        
+        return giftCardRepository.findByIssuedByAndIssuedAtBetweenOrderByIssuedAtDesc(
+            codeNumber, startOfDay, endOfDay);
+    }
+    
+    /**
+     * 특정 코드로 오늘 발행한 상품권 총 금액을 조회합니다.
+     * @param codeNumber 코드 번호
+     * @return 오늘 발행한 총 금액
+     */
+    public int getTodayTotalAmountByCode(String codeNumber) {
+        List<GiftCard> todayGiftCards = getTodayGiftCardsByCode(codeNumber);
+        return todayGiftCards.stream()
+                .mapToInt(GiftCard::getAmount)
+                .sum();
+    }
 }
